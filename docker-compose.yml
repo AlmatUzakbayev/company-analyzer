@@ -1,0 +1,27 @@
+# docker-compose.yml
+version: "1.0"
+
+services:
+  app:
+    build: .
+    command: fastapi_app
+    env_file: .env
+    volumes:
+      - .:/textanalyzer
+    restart: always
+    networks:
+      - app-network
+
+  tg_app:
+    build: .
+    command: tg_bot
+    env_file: .env
+    volumes:
+      - .:/textanalyzer
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
