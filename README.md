@@ -29,7 +29,7 @@ The project consists of two main components:
 
 1. Clone the repository:
 ```bash 
-cd
+git clone https://github.com/AlmatUzakbayev/company-analyzer.git
 ```
 2. Navigate to the project directory:
 ```bash
