@@ -2,26 +2,23 @@
 import sys
 import traceback
 from typing import Dict, Any
-from dotenv import load_dotenv
 from mcp.server import FastMCP
 
-from analyzer.constants import MODEL_VERSION_GEMINI
-from analyzer.core.gemini_generator import GeminiGenerator
-
-load_dotenv()
+from analyzer.config import GOOGLE_API_KEY
+from analyzer.constants import GEMINI_MODEL_NAME
+from analyzer.core.generator import GeminiAnalyser
 
 mcp = FastMCP("company-extractor")
 
-generator = GeminiGenerator(model_name=MODEL_VERSION_GEMINI)
+generator = GeminiAnalyser(api_key=GOOGLE_API_KEY, model_name=GEMINI_MODEL_NAME)
 
 @mcp.tool()
 async def extract_companies(text: str) -> Dict[str, Any]:
     try:
-        result = generator.generate_answer(text)
-        companies = result.get("companies", [])
+        companies = await generator.get_company_analysis(text)
         return {
             "status": "success",
-            "result": result,
+            "result": companies,
             "message": f"Extracted and enriched {len(companies)} companies"
         }
     except Exception as e:
