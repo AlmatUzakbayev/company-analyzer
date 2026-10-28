@@ -44,8 +44,8 @@ class GeminiAnalyser:
         companies_without_website = []
         for item in json_data:
             # Loop for the main companies
-            if item.get("website") in WEBSITES_NA_PLACEHOLDERS and item.get("company"):
-                companies_without_website.append(item.get("company"))
+            if item.get("website") in WEBSITES_NA_PLACEHOLDERS and item.get("company_name"):
+                companies_without_website.append(item.get("company_name"))
 
             if extract_competitors:
                 # Now we check competitors companies
@@ -94,6 +94,23 @@ class GeminiAnalyser:
         except Exception as e:
             raise ValueError(f"Unexpected error during JSON extraction: {e}")
 
+    @staticmethod
+    def flatten_companies(json_blobs: List[Union[dict, list]]) -> List[dict]:
+        """
+        The model answers either with one JSON array or with one JSON object per company.
+        Args:
+            json_blobs: List[Union[dict, list]] - The JSON blocks extracted from the answer.
+        Returns:
+            List[dict]: A flat list of company objects.
+        """
+        companies = []
+        for blob in json_blobs:
+            if isinstance(blob, dict):
+                companies.append(blob)
+            elif isinstance(blob, list):
+                companies.extend(item for item in blob if isinstance(item, dict))
+        return companies
+
     async def generate_response(
         self, input_text: str, find_competitors: bool = True
     ) -> str:
@@ -139,15 +156,11 @@ class GeminiAnalyser:
 
         extracted_json = self.extract_all_json_objects(analysis)
 
-        json_data = extracted_json[0] if extracted_json else []
+        json_data = self.flatten_companies(extracted_json)
 
-        # If json_data is a dictionary (single company), wrap it in a list
-        if isinstance(json_data, dict):
-            json_data = [json_data]
+        companies_wo_website = self.find_companies_without_website(json_data)
 
-        companies_wo_website = str(self.find_companies_without_website(json_data))
-
-        if len(companies_wo_website) > 2:
+        if companies_wo_website:
             new_companies_wo_website = ""
             for company in companies_wo_website:
                 filled_company = await self.generate_response(
@@ -155,7 +168,9 @@ class GeminiAnalyser:
                 )
                 new_companies_wo_website += filled_company
 
-            final_json = self.extract_all_json_objects(new_companies_wo_website)
+            final_json = self.flatten_companies(
+                self.extract_all_json_objects(new_companies_wo_website)
+            )
             new_companies_wo_web = self.find_companies_without_website(
                 final_json, extract_competitors=False
             )
@@ -183,6 +198,4 @@ class GeminiAnalyser:
                         ):
                             competitor.update(updated_company_data)
 
-            return json_data if isinstance(extracted_json[0], list) else [json_data]
-
-        return extracted_json
+        return json_data
