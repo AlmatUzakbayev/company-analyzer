@@ -1,5 +1,7 @@
 # Company Analysis Telegram Bot
 
+[![tests](https://github.com/AlmatUzakbayev/company-analyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/AlmatUzakbayev/company-analyzer/actions/workflows/tests.yml)
+
 A system for analyzing companies using Gemini AI and providing results through a Telegram bot interface. You can find the bot at [@Company_Analyzer_Bot](https://t.me/Company_Analyzer_Bot).
 
 ## Overview
@@ -18,7 +20,7 @@ The project consists of two main components:
 1. **Analyzer API** - FastAPI service using Google's Gemini model for company analysis
 2. **Telegram Bot** - User interface for interacting with the analyzer
 
-## Installation1
+## Installation
 
 ### Prerequisites
 
@@ -33,13 +35,13 @@ git clone https://github.com/AlmatUzakbayev/company-analyzer.git
 ```
 2. Navigate to the project directory:
 ```bash
-cd textanalyzer
+cd company-analyzer
 ```
 3. Install dependencies:
 ```bash
 pip install -e .
 ```
-3. Configure environment variables by creating a `.env` file with your API keys:
+4. Configure environment variables by creating a `.env` file with your API keys:
 ```
 GOOGLE_API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
@@ -53,9 +55,9 @@ docker-compose up --build -d
 ## Usage
 
 ### Running Locally
-1. Change Network in `analyzer/constants.py` to `local`:
+1. Change Network in `analyzer/constants.py` to `localhost`:
 ```python
-NETWORK = "local"
+NETWORK = "localhost"
 ```
 
 2. Start the analyzer API:
@@ -68,9 +70,31 @@ fastapi_app
 tg_bot
 ```
 
-3. Send messages to your Telegram bot to analyze companies
+4. Send messages to your Telegram bot to analyze companies
 
 
+
+### MCP Server
+
+The analyzer is also available as an MCP tool `extract_companies`, so it can be
+used from Claude Desktop or any other MCP client:
+
+```bash
+python -m analyzer.mcp.mcp_server
+```
+
+## Testing
+
+The Gemini client is replaced with a fake, so the tests need no API key or network.
+
+```bash
+pip install -r requirements-test.txt
+pytest -v
+```
+
+The tests cover JSON extraction from model answers, detection of companies
+without a website, the follow-up requests that fill in missing websites
+(one request per company), the response format and the API validation.
 
 ## API Reference
 
