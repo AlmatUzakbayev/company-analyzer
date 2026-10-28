@@ -1,4 +1,4 @@
-GEMINI_MODEL_NAME = "gemini-2.5-flash-preview-05-20"
+GEMINI_MODEL_NAME = "gemini-2.5-flash"
 
 ANALYSE_COMPANY = "/api/v1/analyse-company"
 
